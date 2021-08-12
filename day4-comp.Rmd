@@ -11,6 +11,8 @@ library(tidyverse)
 library(palmerpenguins)
 ```
 
+# -- Morning work --
+
 ## Practice making for loops
 ```{r}
 quarter_splits <- c(1.0, 1.1, 1.2, 1.1, 1.4, 1.5, 1.6, 1.4)
@@ -202,6 +204,111 @@ lunchtime <- function(tacos, price_per) {
 
 lunchtime(tacos = 10, price_per = 4)
 ```
+
+# -- Afternoon work --
+
+## More functions plus some loops
+
+#### Example: use values from data frame to calculate something based on user input
+```{r}
+# Calculate groundwater transport rate
+
+gw_rate <- function(site) {
+  
+  gw_slope_depth <- data.frame(sitename = c("mountain", "prairie", "desert", "beach"),
+                               depth = c(32, 41, 63, 2),
+                               slope = c(11.2, 0.4, 0.8, 2.6))
+  site_select <- filter(gw_slope_depth, sitename == site)
+                # could write: `gw_slope_depth %>% filter(sitename == site)`
+  
+  transport_rate <- 1.4 * site_select$slope + 3.6 * site_select$depth
+  
+  return(transport_rate)
+}
+
+# `filter()` to pull out certain rows
+# `select()` to pull out certain columns
+
+gw_rate(site = "beach")
+```
+
+#### Same as above, but using `switch()`
+
+```{r}
+gw_rate_switch <- function(site) {
+  
+  gw_slope_depth <- switch(site, 
+                           "mountain" = c(32, 11.2),
+                           "prairie" = c(41, 0.4),
+                           "desert" = c(63, 0.8),
+                           "beach" = c(2, 2.6))
+  transport_rate <- 1.4 * gw_slope_depth[2] + 3.6 * gw_slope_depth[1]
+  
+  return(transport_rate)
+}
+
+gw_rate_switch("beach")
+
+# Simple way to write this for above example. Maybe not the best for large data set (instead read in as data frame and then use first option to filter)
+```
+
+## Logistic Growth
+```{r}
+# write right site of equation for function, highlight, "command + option + x" - will make function notation
+
+logistic_growth <- function(K, N0, r, time) {
+ Nt <- K / (1 + ((K - N0) / N0) * exp(-r * time))
+  print(Nt)
+}
+
+logistic_growth(K = 5000, N0 = 200, r = 0.43, time = 6)
+
+# can input one vector for an argument of function
+
+time_vec <- seq(from = 0, to = 35, by = 0.1)
+
+bacterial_growth <- logistic_growth(K = 5000, N0 = 200, r = 0.43, time = time_vec)
+
+bacterial_df <- data.frame(time_vec, bacterial_growth)
+
+ggplot(data = bacterial_df, aes(x = time_vec, y = bacterial_growth)) +
+  geom_point()
+```
+
+### Logistic 
+```{r}
+r_seq <- seq(from = 0.20, to = 0.40, by = 0.01)
+time_vec <- seq(from = 0, to = 35, by = 0.1)
+
+out_matrix <- matrix(nrow = length(time_vec), ncol = length(r_seq))
+
+# N0 = 100, K = 6000
+for (i in seq_along(r_seq)) {
+  for (j in seq_along(time_vec)) {
+    pop <- logistic_growth(K = 6000, N0 = 100, r = r_seq[i], time = time_vec[j])
+    out_matrix[j, i] <- pop
+  }
+}
+# generally won't be writing more than one a double for loop 
+
+
+# Wrangling: put column of time as the first column of the output matrix
+out_df <- data.frame(time = time_vec, out_matrix)
+
+# Wrangling: updated column names
+colnames(out_df) <- c("time", paste0("gr_", r_seq))
+
+# make a long form (tidy version) of this data
+  # `pivotlonger()` takes names from a span of columns, puts them into single column, then lines up values with appropriate number    of names so everything lines up correctly still
+out_df_long <- out_df %>% 
+  pivot_longer(-time, names_to = "growth_rate", values_to = "population")
+
+# Make in ggplot a LINE GRAPH (geom_line()) for population (y-axis) over time (x-axis) with color depending on growth rate
+ggplot(data = out_df_long, aes(x = time, y = population )) +
+  geom_line(aes(color = growth_rate))
+
+```
+
 
 
 

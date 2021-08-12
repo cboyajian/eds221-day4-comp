@@ -374,6 +374,32 @@ lunchtime &lt;- function(tacos, price_per) {
 lunchtime(tacos = 10, price_per = 4)</code></pre>
 <pre><code>## [1] 40</code></pre>
 </div>
+<div id="more-functions-plus-some-loops" class="section level2">
+<h2>More functions plus some loops</h2>
+<div id="example-use-values-from-data-frame-to-calculate-something-based-on-user-input" class="section level4">
+<h4>Example: use values from data frame to calculate something based on user input</h4>
+<pre class="r"><code># Calculate groundwater transport rate
+
+gw_rate &lt;- function(site) {
+  
+  gw_slope_depth &lt;- data.frame(sitename = c(&quot;mountain&quot;, &quot;prarie&quot;, &quot;desert&quot;, &quot;beach&quot;),
+                               depth = c(32, 41, 63, 2),
+                               slope = c(11.2, 0.4, 0.8, 2.6))
+  site_select &lt;- filter(gw_slope_depth, sitename == site)
+                # could write: `gw_slope_depth %&gt;% filter(sitename == site)`
+  
+  transport_rate &lt;- 1.4 * site_select$slope + 3.6 * site_select$depth
+  
+  return(transport_rate)
+}
+
+# `filter()` to pull out certain rows
+# `select()` to pull out certain columns
+
+gw_rate(site = &quot;beach&quot;)</code></pre>
+<pre><code>## [1] 10.84</code></pre>
+</div>
+</div>
 
 
 
