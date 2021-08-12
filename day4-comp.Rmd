@@ -1,0 +1,212 @@
+---
+title: "Day 4 Comp"
+author: "Clarissa Boyajian"
+date: "8/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(palmerpenguins)
+```
+
+## Practice making for loops
+```{r}
+quarter_splits <- c(1.0, 1.1, 1.2, 1.1, 1.4, 1.5, 1.6, 1.4)
+half_splits <- vector(mode = "numeric", length = length(quarter_splits) - 1)
+
+for (i in 1:(length(quarter_splits) - 1)) {
+  half_mile <- quarter_splits[i] + quarter_splits[i + 1]
+  half_splits[i] <- half_mile
+}
+
+half_splits
+
+# need to use `1:(length(quarter_splits) -1)` instead of `seq_along(quarter_splits) - 1` because there isn't a 0 position and `seq_along() - 1` creates "0, 1, 2, 3, 4, 5, 6, 7"
+```
+
+
+## Basic function structure practice
+```{r}
+birddog_sum <- function(bird, dog) {
+  add_birddog <- sum(bird + dog)
+  return(add_birddog)
+}
+
+bird100_dog5 <- birddog_sum(bird = 100, dog = 5)
+bird100_dog5
+
+# how can this break: enter string instead of numeric (`sum()` and `+` expects numerics)
+birddog_sum(bird = 10, dog = 10)
+```
+
+
+```{r}
+say_hello <- function(friend, weekday) {
+  print(paste("Hello,", friend, "have a great", weekday))
+}
+
+say_hello(friend = "Sarah", weekday = "Thursday")
+```
+
+## Creating error messages or regular message within function
+```{r}
+birddog_sum <- function(bird, dog) {
+  
+  if (bird > 50) {
+    stop("Birds can't be greater than 50")
+  }
+  if (bird < 10) {
+    message("Cool little bird!")
+  }
+  if (dog < 0) {
+    warning("Can a dog be less than 0 lbs?")
+  }
+  
+  add_birddog <- sum(bird + dog)
+  return(add_birddog)
+}
+
+#broken code: birddog_sum(bird = 55, dog = 10)
+
+birddog_sum(bird = 6, dog = 5)
+
+birddog_sum(bird = 6, dog = -5)
+```
+
+## Print vs. return example
+```{r}
+find_multiple <- function(a, b) {
+  my_multiplication <- a * b
+  print(my_multiplication)
+}
+
+# In python this will break (have to use return instead of print)
+find_multiple(a = 10, b = 6)
+
+find_multiple(a = 10, b = 6) + 12
+
+# Usually you would store it into another object
+my_final_value <- find_multiple(a = 10, b = 6) + 12
+
+my_final_value
+```
+
+
+## Functions with conditions
+```{r}
+animal_age <- function(animal, age) {
+  
+  if (animal == "dog") {
+    creature_age <- age * 7
+  }
+  else if (animal == "goat") {
+    creature_age <- age * 4.7
+  }
+  return(creature_age)
+}
+
+animal_age(animal = "goat", age = 10)
+
+# How can this break? If you put age as a string, if you enter a different animal name
+```
+
+#### Creating nice message for possible breaks from above
+```{r}
+# `stop()` stops the code at that point if condition isn't met and gives message
+# `warning()` runs the code but gives warning message if condition met
+# `message() gives message if certain conditions met
+
+animal_age <- function(animal, age) {
+  
+  if (!animal %in% c("dog", "goat")) {
+    stop("Animal must be a dog or a goat.")
+  }
+  
+  if (animal == "dog") {
+    creature_age <- age * 7
+  }
+  else if (animal == "goat") {
+    creature_age <- age * 4.7
+  }
+  return(creature_age)
+}
+
+#broken code: animal_age(animal = "zebra", age = 10)
+
+# won't knit if there's a stop error message showing up, can comment out broken code to allow kniting
+```
+
+```{r}
+# `%in%` asks, for each element (row) it will ask "in column species, is this Adelie or Gentoo", then it will go to the next row
+
+adelie_gentoo <- penguins %>% 
+  filter(species %in% c("Adelie", "Gentoo"))
+```
+
+```{r}
+# in data set this will go to first row in species column and say "does this match Adelie", then goes to the second row and says "is this Gentoo", keeps going back and for until at end of data set (AKA does't ask is this Adelie or Gentoo for each row)
+
+adelie_gentoo_wrong <- penguins %>% 
+  filter(species == c("Adelie", "Gentoo"))
+```
+
+
+## Combine functions and for loops
+
+```{r}
+# when in doubt if something is going to work, build them separately to test them out first
+# `colnames(df[i])` will return that column name as a string
+# have to use `[[]]` here because we're working with data frame instead of vector
+
+df_means <- function(df) {
+  for (i in 1:ncol(df)) {
+    col_mean <- mean(df[[i]], na.rm = TRUE)
+    col_name <- colnames(df[i])
+    print(paste("The mean of", col_name, "is", col_mean))
+  }
+}
+
+df_means(df = mtcars)
+```
+
+```{r}
+# Make a subset of only the structural size variables from penguins data set for Chinstraps
+
+chinstrap_sizes <- penguins %>% 
+  filter(species == "Chinstrap") %>% 
+  select(bill_depth_mm, bill_length_mm, body_mass_g, bill_depth_mm)
+
+df_means(chinstrap_sizes)
+
+df_means(penguins)
+```
+
+## Condition to check the class of an input
+```{r}
+# `is.something` asks the questions is something true or false
+# `as.something' assigns an element to be the something
+
+lunchtime <- function(tacos, price_per) {
+  
+  if (is.numeric(tacos) == FALSE) {
+    stop("You must input a number of tacos.")
+  }
+  
+  total_price <- tacos * price_per
+  return(total_price)
+}
+
+#broken code: lunchtime(tacos = "stop", price_per = 2.5)
+
+lunchtime(tacos = 10, price_per = 4)
+```
+
+
+
+
+
+
+
+
